@@ -182,15 +182,3 @@ powershell -ExecutionPolicy Bypass -File .\run-local.ps1
 | 04:47 | 遇到问题与退出 |
 
 视频包含标注过的演示数据和示意画面。安装部分演示的是 EXE 安装版，本次附件提供 ZIP 免安装版，请按上面的「下载与启动」操作；持续监控面板已有更新，以当前界面和图文步骤为准。
-
-## 数据与更新
-
-源码模式数据在仓库目录；发行包数据在 `%LOCALAPPDATA%\SustechReservation\data`。不要混淆这两份数据，也不要上传自己的配置。运行时锁文件位于 `release/`，构建入口为 `scripts/build_release.py`。
-
-更新前结束自己的任务，保留配置和订单记录；不要清空未确认订单。不再使用采集方式时，按配置记录撤销本工具添加的规则和证书，再删除程序。
-
-反馈时提供版本、Windows 版本、复现步骤和脱敏错误。截图遮住登录参数、身份信息和订单；不要上传整个数据目录、Token、Cookie、证书或原始抓包。
-
-## 来源与许可
-
-基于 [fynngwu/badminton_scripts](https://github.com/fynngwu/badminton_scripts) 修改。本次未发现上游明确的开源许可证，不宣称为 MIT 或 Apache 等开放许可，上传也不代表取得额外授权。原版本的来源与限制说明见 [NOTICE](NOTICE.md)，第三方许可随程序包提供。
