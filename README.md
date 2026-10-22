@@ -4,6 +4,23 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 代码整理自已测试的 `f599a84` 版本，保留运行所需的平台适配。适用于特定预约平台，不支持任意网站。仓库改名不构成匿名保证。
 
+## 教程、配置脚本和 AI 提示词
+
+这些文件已经放在本仓库，可以直接在线查看，不必为了阅读它们下载程序压缩包：
+
+| 你需要什么 | 直接打开 |
+| --- | --- |
+| 从安装到抢场、监控的完整教程 | [快速开始](docs/QUICKSTART.md) |
+| 如何配置自动获取登录信息，以及如何撤销 | [配置说明](docs/CAPTURE_SETUP.md) |
+| 交给自己电脑上的 Claude Code / Codex 帮忙配置 | [复制这里的提示词正文](docs/LOCAL_AGENT_CAPTURE_PROMPT.md) |
+| 一键配置入口（源码版） | [setup-capture.cmd](setup-capture.cmd) |
+| 配置脚本源码 | [scripts/capture_setup.py](scripts/capture_setup.py) |
+| 撤销入口（源码版） | [undo-capture.cmd](undo-capture.cmd) |
+
+提示词用于使用者自己的电脑。填写自己的环境后交给本地 AI，它会先检查再逐步确认配置。源码版入口需要完整仓库和已安装依赖的 `.venv`，不能只下载一个 CMD 文件运行。
+
+不想搭建源码环境时，再使用下面的免安装程序 ZIP；包里的对应入口名为 `配置自动获取.cmd` 和 `撤销自动获取配置.cmd`。
+
 [下载 Windows 程序](https://github.com/John030427/court-booking-workbench/releases/tag/v2026.10.22-f599a84) · [观看新手视频（5 分 39 秒）](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4) · [详细图文教程](docs/QUICKSTART.md)
 
 [![点击观看新手视频：账号接入、定时抢场与持续监控](docs/assets/tutorial-cover.jpg)](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4)
