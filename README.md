@@ -4,6 +4,10 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 代码整理自已测试的 `f599a84` 版本，保留运行所需的平台适配。适用于特定预约平台，不支持任意网站。仓库改名不构成匿名保证。
 
+[下载 Windows 程序](https://github.com/John030427/court-booking-workbench/releases/tag/v2026.10.22-f599a84) · [观看新手视频（5 分 39 秒）](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4) · [详细图文教程](docs/QUICKSTART.md)
+
+[![点击观看新手视频：账号接入、定时抢场与持续监控](docs/assets/tutorial-cover.jpg)](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4)
+
 ## 下载与启动
 
 在 [Releases](https://github.com/John030427/court-booking-workbench/releases) 下载 Windows x64 免安装程序 ZIP 和 `SHA256SUMS.txt`。GitHub 自动生成的 Source code ZIP 只有源码，不含运行时。
@@ -72,7 +76,23 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 ## 视频教程
 
-完整 MP4 尚未取得。本次没有把短录屏素材当成完整教程，请先阅读 [图文操作步骤](docs/QUICKSTART.md)。拿到并检查成片后会在 Releases 添加视频、字幕和章节表。
+完整视频已作为 Release 附件提供：[观看或下载 MP4](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4)。点击本页封面也可打开视频；浏览器可能直接播放或下载，下载后用本机播放器观看即可。
+
+视频为 1080p、中文配音和字幕，约 5 分 39 秒、29.6 MB。章节已写入 MP4，支持章节的播放器可直接跳转：
+
+| 时间 | 内容 |
+| --- | --- |
+| 00:25 | 下载与安装 |
+| 01:03 | 一键配置登录信息自动获取 |
+| 01:42 | 确认账号接入 |
+| 02:35 | 手动选择空场 |
+| 02:59 | 提前设置定时抢场 |
+| 04:02 | 查看预约结果 |
+| 04:20 | 两种运动同时抢场 |
+| 04:34 | 持续监控 |
+| 04:47 | 遇到问题与退出 |
+
+视频包含标注过的演示数据和示意画面。安装部分演示的是 EXE 安装版，本次附件提供 ZIP 免安装版，请按上面的「下载与启动」操作；持续监控面板已有更新，以当前界面和图文步骤为准。
 
 ## 源码运行与数据
 
