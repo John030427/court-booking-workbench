@@ -4,6 +4,67 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 代码整理自已测试的 `f599a84` 版本，保留运行所需的平台适配。适用于特定预约平台，不支持任意网站。仓库改名不构成匿名保证。
 
+## 快速开始
+
+选择一种方式即可：熟悉终端就复制命令，不熟悉就把提示词交给自己电脑上的 Claude Code、Codex 等本地 Agent。
+
+### 方式一：复制命令启动
+
+适用 Windows 10/11 x64。先安装 Git 和 Python 3.13 x64（包含 `py` 启动器），然后在 PowerShell 中逐行执行。任意一步报错先停下，解决后再继续；同名目录已存在时不要覆盖。
+
+```powershell
+git clone https://github.com/John030427/court-booking-workbench.git
+cd court-booking-workbench
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --require-hashes -r release/requirements-win.lock
+powershell -ExecutionPolicy Bypass -File .\run-local.ps1
+```
+
+浏览器打开 [http://127.0.0.1:8766/](http://127.0.0.1:8766/)。首次进入先检查「设置 → 测试模式」：当前默认真实预约，演练前请开启测试模式。服务启动后还需要接入自己的账号。
+
+需要自动获取登录信息时，保持服务窗口开着，在仓库目录另开 PowerShell，执行以下入口，并按提示逐项确认：
+
+```powershell
+.\setup-capture.cmd
+```
+
+配置说明与撤销方式见 [账号接入指南](docs/CAPTURE_SETUP.md)。后续启动只需在仓库目录运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-local.ps1
+```
+
+### 方式二：复制提示词交给 Agent
+
+把下面整段交给**使用者自己电脑上有终端权限的本地 Agent**。普通网页聊天不会自动获得本机操作权限。
+
+```text
+请帮我在这台 Windows 电脑上安装并启动 Court Booking Workbench，
+然后协助我接入自己的账号。请用中文沟通。
+
+仓库：https://github.com/John030427/court-booking-workbench
+
+1. 先检查 Windows 版本、Git、Python 3.13 x64、目标目录和 8766/8080
+   端口占用。已有安装就先核实并复用，不覆盖文件、不杀占用端口的程序。
+   Git/Python 缺失时说明安装方案，征得我同意后安装。
+2. 读取仓库 README.md、docs/QUICKSTART.md、docs/CAPTURE_SETUP.md，
+   克隆到合适目录，创建 .venv，使用 Python 3.13 和
+   release/requirements-win.lock 安装带哈希校验的依赖。
+3. 用 run-local.ps1 启动，检查本机 /api/health，只输出版本、数据目录
+   和任务是否运行等安全字段。不要把“服务已启动”说成“账号已接入”。
+4. 接着阅读 docs/LOCAL_AGENT_CAPTURE_PROMPT.md，按我实际使用的代理
+   客户端选择接入方式。修改代理、规则或证书前，说明影响、备份与撤销
+   方法，等我确认；只处理目标预约站点，保留其他流量走向。
+5. 不打印或上传 Token、Cookie、手机号、身份编号、代理密钥和证书私钥，
+   不展示凭证预览，不让我把这些信息粘贴到聊天里。
+6. 不启动抢场或监控，不调用下单接口，不清空订单记录，不自动切换测试
+   模式。需要平台只读验证前先问我，需要官方登录或人工验证时让我操作。
+7. 完成后告诉我启动/退出方式、当前测试模式、账号接入进度、未完成的
+   人工步骤和如何撤销网络配置。讲解抢场和持续监控，最终目标由我设置。
+```
+
+已经装好工作台、只需要配置登录接入时，直接使用 [专用配置提示词](docs/LOCAL_AGENT_CAPTURE_PROMPT.md)。不想安装 Git/Python 时，也可以使用下方的 ZIP 免安装版。
+
 ## 教程、配置脚本和 AI 提示词
 
 这些文件已经放在本仓库，可以直接在线查看，不必为了阅读它们下载程序压缩包：
@@ -111,15 +172,7 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 视频包含标注过的演示数据和示意画面。安装部分演示的是 EXE 安装版，本次附件提供 ZIP 免安装版，请按上面的「下载与启动」操作；持续监控面板已有更新，以当前界面和图文步骤为准。
 
-## 源码运行与数据
-
-Windows x64 环境，在仓库目录执行：
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-powershell -ExecutionPolicy Bypass -File .\run-local.ps1
-```
+## 数据与更新
 
 源码模式数据在仓库目录；发行包数据在 `%LOCALAPPDATA%\SustechReservation\data`。不要混淆这两份数据，也不要上传自己的配置。运行时锁文件位于 `release/`，构建入口为 `scripts/build_release.py`。
 
