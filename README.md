@@ -6,6 +6,16 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 ## 开始前准备
 
+先认准下面两个软件。企业微信中的预约页面使用的是**企业微信内置浏览器**，不是单独安装的浏览器，也不是本机工作台页面。
+
+| 企业微信：打开并保留预约页面 | Clash Verge Rev：配置预约站点分流 |
+| --- | --- |
+| <img src="docs/assets/wecom-icon.png" alt="企业微信官方图标" width="64" height="64"> | <img src="docs/assets/clash-verge-rev-icon.png" alt="Clash Verge Rev 官方图标" width="64" height="64"> |
+| 登录企业微信 → 工作台 → 场地预约 → 保持预约窗口打开 | 打开客户端 → 确认规则模式 → 按配置脚本提示添加规则 |
+| [企业微信官网](https://work.weixin.qq.com/) | [Clash Verge Rev 官方项目与下载](https://github.com/clash-verge-rev/clash-verge-rev) |
+
+图标取自各自官方站点或官方仓库，仅用于辨认软件；界面及图标可能随版本变化。
+
 1. **打开并登录电脑版企业微信。** 从工作台进入官方场地预约页面，确认能正常看到场馆和场地。使用期间保持企业微信及预约页面打开，电脑保持联网、不休眠；自动恢复登录需要这个窗口。配置脚本提示重新打开客户端时，再按提示操作。
 2. **准备好能自定义分流规则的代理客户端。** 推荐的自动获取流程使用 Clash Verge Rev；其他客户端先按 [配置指南](docs/CAPTURE_SETUP.md) 或交给本地 Agent 检查。Clash 路线需要规则模式，系统代理或 TUN 至少启用一个，并确认企业微信流量确实经过客户端。只针对预约站点添加规则，具体修改交给配置脚本逐项确认，不需要为了本工具开启全局模式。
 3. **选择安装方式。** 命令行方式需要 Git、Python 3.13 x64 和 PowerShell；使用 Agent 方式需先准备好有本机终端权限的 Claude Code / Codex；ZIP 免安装版自带 Python。
