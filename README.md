@@ -18,7 +18,7 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 1. **打开并登录电脑版企业微信。** 从工作台进入官方场地预约页面，确认能正常看到场馆和场地。使用期间保持企业微信及预约页面打开，电脑保持联网、不休眠；自动恢复登录需要这个窗口。配置脚本提示重新打开客户端时，再按提示操作。
 2. **准备好能自定义分流规则的代理客户端。** 推荐的自动获取流程使用 Clash Verge Rev；其他客户端先按 [配置指南](docs/CAPTURE_SETUP.md) 或交给本地 Agent 检查。Clash 路线需要规则模式，系统代理或 TUN 至少启用一个，并确认企业微信流量确实经过客户端。只针对预约站点添加规则，具体修改交给配置脚本逐项确认，不需要为了本工具开启全局模式。
-3. **准备安装工具。** 命令行方式需要 Git、64 位 Python 和 PowerShell，不指定 Python 小版本，优先使用电脑已有的安装。使用 Agent 方式需先准备好有本机终端权限的 Claude Code / Codex，由它检查依赖兼容性并协助安装。
+3. **准备安装工具。** 命令行方式需要 Git 和 Python 3.12 或更新的正式版（64 位），用电脑上已有的就行，不需要特定小版本。使用 Agent 方式需先准备好有本机终端权限的 Claude Code / Codex，由它检查并协助安装。
 
 以上代理准备针对**自动获取登录信息**的方式。不愿修改代理或证书时，可以尝试页面连接脚本，但官方客户端需要支持开发工具，且不能保证登录失效后自动恢复。安装好工作台也不等于已接入账号，仍需完成登录同步和只读验证。
 
@@ -26,55 +26,51 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 选择一种方式即可：熟悉终端就复制命令，不熟悉就把提示词交给自己电脑上的 Claude Code、Codex 等本地 Agent。
 
-### 方式一：复制命令启动
+### 方式一：用 Git 命令安装
 
-适用 Windows 10/11 x64。准备好 Git 和 64 位 Python，在**普通 PowerShell** 中复制执行下面整段，不需要管理员权限。命令会先进入你自己的用户目录，再下载项目，不受 PowerShell 初始目录影响，也不会在 `C:\Windows\System32` 下创建文件。任意一步失败会停止本段后续操作，同名项目目录已存在时不会覆盖。
+先装好这两个（电脑上已经有就直接用，不用卸载重装）：
 
-```powershell
-& {
-    $ErrorActionPreference = 'Stop'
-    if (-not (Get-Command git -CommandType Application -ErrorAction SilentlyContinue)) {
-        throw 'Git not found. Install Git, then reopen PowerShell.'
-    }
-    $python = Get-Command py, python -CommandType Application -ErrorAction SilentlyContinue |
-        Select-Object -First 1
-    if (-not $python) { throw 'Python not found. Install Python, then reopen PowerShell.' }
+- [Git](https://git-scm.com/download/win)
+- [Python](https://www.python.org/downloads/windows/) **3.12 或更新的正式版**，64 位，不需要特定小版本。新装时勾选「Add python.exe to PATH」。
 
-    $projects = Join-Path $env:USERPROFILE 'Projects'
-    New-Item -ItemType Directory -Path $projects -Force | Out-Null
-    Set-Location -LiteralPath $projects
-    if (Test-Path -LiteralPath 'court-booking-workbench') {
-        throw 'Project folder already exists. Open that folder instead; do not overwrite it.'
-    }
-    git clone https://github.com/John030427/court-booking-workbench.git
-    if ($LASTEXITCODE -ne 0) { throw 'Clone failed. No further steps were run.' }
-    Set-Location -LiteralPath (Join-Path $projects 'court-booking-workbench')
-    & $python.Source -m venv .venv
-    if ($LASTEXITCODE -ne 0) { throw 'Virtual environment creation failed.' }
-    & .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-    if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed. Do not start the service yet.' }
-    & .\.venv\Scripts\python.exe launcher.py
-    if ($LASTEXITCODE -ne 0) { throw 'Service startup failed. Check the launcher message.' }
-}
-```
+然后打开**普通的** PowerShell：开始菜单搜「PowerShell」直接打开，**不要**选「以管理员身份运行」。按下面三步执行，每一步成功了再做下一步。
 
-默认安装位置是 `%USERPROFILE%\Projects\court-booking-workbench`，即**这台电脑当前用户**的文件夹；不要照抄其他电脑的用户名或 `D:` 盘路径。`py` 可用时使用它，否则使用 `python`。不要求重装指定小版本，但也不代表任意 Python 都能兼容：若虚拟环境或依赖报错，先保留错误交给 Agent 检查，不继续启动。源码安装使用 `requirements.txt`；`release/requirements-win.lock` 留给固定运行时的发行包构建，不作为通用安装命令。
-
-已经克隆过项目时，在 PowerShell 中先运行 `Set-Location -LiteralPath (Join-Path $env:USERPROFILE 'Projects\court-booking-workbench')`，再处理失败的步骤，不要重复克隆或删除已有配置。若之前安装在别处，使用你实际的仓库路径。
-
-浏览器打开 [http://127.0.0.1:8766/](http://127.0.0.1:8766/)。`127.0.0.1` 指的是**当前这台电脑**，笔记本必须先启动自己的服务，不是连接原电脑；不需要把它改成 GitHub 地址或其他电脑的 IP。首次进入先检查「设置 → 测试模式」：当前默认真实预约，演练前请开启测试模式。服务启动后还需要接入自己的账号。
-
-看到 `OPEN http://127.0.0.1:8766/` 后启动命令会结束，服务在后台继续运行，可以关闭终端。需要自动获取登录信息时，在仓库目录打开 PowerShell，执行以下入口，并按提示逐项确认：
+**第 1 步：下载到自己的用户文件夹**
 
 ```powershell
-.\setup-capture.cmd
+cd ~
+git clone https://github.com/John030427/court-booking-workbench.git
+cd court-booking-workbench
 ```
 
-配置说明与撤销方式见 [账号接入指南](docs/CAPTURE_SETUP.md)。后续启动只需在仓库目录运行：
+`cd ~` 先回到你自己的用户文件夹，项目会下载到 `C:\Users\你的用户名\court-booking-workbench`。少了这一步，PowerShell 可能停在 `C:\Windows\System32`，`git clone` 会报 `Permission denied`。
+
+**第 2 步：建 Python 环境，安装依赖**
+
+```powershell
+py --version
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+`py --version` 要显示 3.12 或更新。`py` 会用电脑上最新的 Python；提示找不到 `py` 时，把前两行的 `py` 换成 `python`。安装依赖要几分钟，结尾没有红色的 `ERROR` 就是成功了。
+
+**第 3 步：启动**
 
 ```powershell
 .\.venv\Scripts\python.exe launcher.py
 ```
+
+看到 `OPEN http://127.0.0.1:8766/` 就成功了：浏览器会打开工作台，服务在后台运行，可以关掉 PowerShell。`127.0.0.1` 指的是**你自己这台电脑**，每台电脑都要在自己这里装好、启动。
+
+第一次进入先看「设置 → 测试模式」：默认是真实预约，想先演练就打开测试模式。然后接入自己的账号：需要自动获取登录信息时，在项目文件夹里运行 `.\setup-capture.cmd`，按提示逐项确认；说明和撤销方法见 [账号接入指南](docs/CAPTURE_SETUP.md)。
+
+**以后怎么用**
+
+- 启动：双击项目文件夹里的 `start-workbench.vbs`，不会弹出任何窗口。
+- 退出：网页左下角「退出服务」，或双击 `stop-workbench.cmd`。关掉浏览器不会停止服务。
+- 更新到新版：先退出服务，在项目文件夹里运行 `git pull`，再运行一次第 2 步的最后一行，然后照常启动。
+- 已经下载过就不要再 `git clone`，也不要删掉项目文件夹：配置和订单记录都在里面。之前按旧说明装在 `Projects` 文件夹里的，继续用那个文件夹即可。
 
 ### 方式二：复制提示词交给 Agent
 
@@ -88,20 +84,23 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 1. 先检查 Windows 版本、Git、已有的 64 位 Python、目标目录和 8766/8080
    端口占用。已有安装就先核实并复用，不覆盖文件、不杀占用端口的程序。
-   不写死 Python 小版本，优先复用已安装且兼容的解释器；缺失或不兼容时
-   说明证据和安装方案，征得我同意后安装，不擅自替换其他项目的 Python。
+   Python 用已安装的 3.12 或更新的正式版，不写死小版本；没有或太旧时
+   说明情况和安装方案，征得我同意后安装，不擅自替换其他项目的 Python。
    提醒我登录电脑版企业微信，从工作台打开官方预约页并保持窗口开启。
    检查 Clash Verge Rev 或其他代理客户端是否支持自定义规则，以及当前
    规则模式、系统代理/TUN 和企业微信流量路径；先检查，不擅自切换。
 2. 读取仓库 README.md、docs/QUICKSTART.md、docs/CAPTURE_SETUP.md，
-   默认克隆到当前用户的 %USERPROFILE%\Projects\court-booking-workbench，
-   先切换到可写目录，不在 C:\Windows\System32 下克隆，不照抄其他电脑
-   的绝对路径。已有目录先检查，不覆盖、不删除。用已有 Python 创建
-   .venv，再用 .venv\Scripts\python.exe -m pip install -r requirements.txt
-   安装依赖；不使用发行包专用的锁文件。每一步检查退出码，失败就停下，
-   不在克隆失败或虚拟环境不存在时继续运行后续命令。
+   按 README「方式一」的三步安装：先 cd 到当前用户的主目录再克隆，
+   不在 C:\Windows\System32 下克隆，不照抄其他电脑的绝对路径；已有
+   目录（包括 %USERPROFILE%\Projects\court-booking-workbench）先检查、
+   复用，不覆盖、不删除。用 py（没有就用 python）创建 .venv，再用
+   .venv\Scripts\python.exe -m pip install -r requirements.txt 安装依赖；
+   不使用发行包专用的锁文件。每一步检查退出码，失败就停下，不在克隆
+   失败或虚拟环境不存在时继续运行后续命令。
 3. 用 .venv\Scripts\python.exe launcher.py 后台启动，等待健康检查成功，
-   不新开 CMD/PowerShell 窗口、不在前台运行 uvicorn。检查 /api/health，
+   不新开 CMD/PowerShell 窗口、不在前台运行 uvicorn。服务要连学校，
+   这条启动命令要在你的沙箱外运行，先征得我同意；做不到就让我自己
+   双击 start-workbench.vbs。检查 /api/health，
    只输出版本、数据目录
    和任务是否运行等安全字段。不要把“服务已启动”说成“账号已接入”。
 4. 接着阅读 docs/LOCAL_AGENT_CAPTURE_PROMPT.md，按我实际使用的代理
@@ -138,7 +137,7 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 ## 在另一台笔记本测试
 
-1. 使用 Windows 10/11 x64，按上面的 Git 命令安装，或者把完整提示词交给本地 Agent。复用兼容的 64 位 Python，在自己的用户目录克隆，用 `requirements.txt` 安装依赖，不照抄原电脑的安装路径。
+1. 使用 Windows 10/11 x64，按上面「方式一」的三步安装，或者把完整提示词交给本地 Agent。用这台电脑自己的 Python（3.12 或更新），不照抄原电脑的安装路径。
 2. 不要复制原电脑的 `config.toml`、订单记录、日志、Token 或 `.mitmproxy` 证书目录。新电脑使用自己的本机配置和证书。
 3. 双击 `start-workbench.vbs`，在「设置」先确认测试模式，需要演练时手动开启。不要一上来就设置真实自动预约。
 4. 查看新手引导，确认羽毛球「不限」显示 10 个场地、网球显示 7 个；登录接入前没有场地数据是正常的。
@@ -193,8 +192,10 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 | 现象 | 处理方式 |
 | --- | --- |
-| 在 `System32` 克隆提示 `Permission denied` | 先切换到自己的用户目录，再按上面的完整安装步骤操作；不要用管理员权限硬装到系统目录 |
-| 提示找不到指定 Python，后面命令连续失败 | 使用已有的 `py` 或 `python`，先创建成功 `.venv`；失败时不要继续安装依赖或启动服务 |
+| `git clone` 报 `Permission denied`（在 `System32` 里） | 先运行 `cd ~` 回到自己的用户文件夹再下载；用普通 PowerShell，不要用管理员 |
+| 找不到 `py` 和 `python`，或版本低于 3.12 | 从 python.org 装 3.12 或更新的正式版（勾选 Add python.exe to PATH），重新打开 PowerShell；之前建失败的 `.venv` 文件夹删掉，再做第 2 步 |
+| 安装依赖时出现红色 `ERROR` | 多半是 Python 太旧或网络中断。确认 `py --version` 后重新运行那一行；没装好之前不要启动 |
+| 前一步失败了，后面几行也全报错 | 正常现象，后面的都依赖前一步。回到第一个报错的那一步解决，再往下做 |
 | 本机网页打不开 | 检查启动提示、服务日志和端口占用，不随意结束其他进程 |
 | 官方页出现 502 | 检查本机代理及分流回环，按备份撤销本工具增加的配置 |
 | 已连接但验证失败 | 看同步和验证时间，区分鉴权、网络和平台业务异常 |
