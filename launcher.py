@@ -152,6 +152,15 @@ def log_tail(lines: int = 12) -> str:
         return ""
 
 
+def server_executable() -> str:
+    executable = Path(sys.executable)
+    if sys.platform == 'win32' and executable.name.lower() == 'pythonw.exe':
+        console = executable.with_name('python.exe')
+        if console.is_file():
+            return str(console)
+    return str(executable)
+
+
 def spawn_server() -> subprocess.Popen:
     log_path = LOG_DIR / "server.log"
     if log_path.exists() and log_path.stat().st_size > LOG_ROTATE_BYTES:
@@ -160,7 +169,9 @@ def spawn_server() -> subprocess.Popen:
     env = {**os.environ, "SUSTECH_APP_PORT": str(app_port()), "PYTHONUTF8": "1"}
     kwargs: dict = {"cwd": str(APP_ROOT), "stdin": subprocess.DEVNULL, "stdout": log, "stderr": subprocess.STDOUT,
                     "env": env}
-    cmd = [sys.executable, str(APP_ROOT / "serve.py")]
+    # Keep outbound traffic on the python.exe path used by existing capture bypass rules.
+    # The Windows creation flags below keep the server windowless even with python.exe.
+    cmd = [server_executable(), str(APP_ROOT / "serve.py")]
     try:
         if sys.platform != "win32":
             return subprocess.Popen(cmd, start_new_session=True, **kwargs)
