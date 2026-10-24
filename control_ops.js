@@ -1,10 +1,14 @@
 (() => {
-  const DEFAULT_COURTS_BADMINTON = "1,2,3,4,7,8,9,10";
-  const DEFAULT_COURTS_TENNIS = "1,2,3,4,5,6,7";
+  // The court options are static HTML for badminton's 10 courts; tennis has 7.
+  const COURT_COUNT = { badminton: 10, tennis: 7 };
 
+  function courtCount() {
+    return COURT_COUNT[window.courtActiveSportId?.() || "badminton"] || 10;
+  }
+
+  // 「不限」: every court of the sport, in number order.
   function defaultCourtsForSport() {
-    const sport = window.courtActiveSportId?.() || "badminton";
-    return sport === "tennis" ? DEFAULT_COURTS_TENNIS : DEFAULT_COURTS_BADMINTON;
+    return Array.from({ length: courtCount() }, (_, i) => i + 1).join(",");
   }
 
   function fillTimeSelect(sel, fromMin, toMin) {
@@ -95,13 +99,10 @@
     }
   }
 
-  // The court options are static HTML for badminton's 10 courts; tennis has 7.
-  const COURT_COUNT = { badminton: 10, tennis: 7 };
-
   function syncCourtScopeOptions() {
     const scope = document.getElementById("watch-court-scope");
     if (!scope) return;
-    const count = COURT_COUNT[window.courtActiveSportId?.() || "badminton"] || 10;
+    const count = courtCount();
     for (const opt of scope.options) {
       if (opt.value === "all") opt.textContent = `不限（全部 ${count} 个场地）`;
       else if (/^\d+$/.test(opt.value)) opt.hidden = opt.disabled = Number(opt.value) > count;
@@ -115,7 +116,7 @@
     if (!scope || !courts) return;
     const list = courts.value.trim();
     const defaultCourts = defaultCourtsForSport();
-    if (!list || list === defaultCourts || list === DEFAULT_COURTS_BADMINTON) {
+    if (!list || list === defaultCourts) {
       scope.value = "all";
       return;
     }
@@ -236,6 +237,7 @@
   window.persistRushPlanFromShell = persistRushPlanFromShell;
   window.updateOpShellTitle = updateOpShellTitle;
   window.syncCourtScopeOptions = syncCourtScopeOptions;
+  window.courtCountForSport = (sportId) => COURT_COUNT[sportId] || 10;
   window.initControlOpsShell = initControlOpsShell;
 
   if (document.readyState === "loading") {

@@ -38,7 +38,7 @@ APP_FILES = [
     "app.py", "engine.py", "utils.py", "connection.py", "watcher.py", "mitm_addon.py",
     "serve.py", "launcher.py", "app_paths.py",
     "index.html", "bridge.html", "connect.js", "connect-inject.js", "watch.js", "sport_scope.js",
-    "matrix_target.js", "control_ops.js", "clash-extension.js",
+    "matrix_target.js", "control_ops.js", "clash-extension.js", "onboarding.js",
     "fast_db.npz", "config.example.toml", "scripts/capture_setup.py",
 ]
 APP_PACKAGES = ["core", "models", "network"]  # *.py only
@@ -56,6 +56,30 @@ ENTRY_FILES = {
                        '"%~dp0runtime\\python.exe" "%~dp0app\\scripts\\capture_setup.py"\r\npause\r\n'),
     "撤销自动获取配置.cmd": ('@echo off\r\nchcp 65001 >nul\r\n'
                       '"%~dp0runtime\\python.exe" "%~dp0app\\scripts\\capture_setup.py" --undo\r\npause\r\n'),
+}
+
+def windowless_entry(stop: bool = False) -> str:
+    body = '''Option Explicit
+Dim shell, files, root, python, entry, quote
+Set shell = CreateObject("WScript.Shell")
+Set files = CreateObject("Scripting.FileSystemObject")
+root = files.GetParentFolderName(WScript.ScriptFullName)
+python = files.BuildPath(root, "runtime\\pythonw.exe")
+entry = files.BuildPath(root, "app\\launcher.py")
+If Not files.FileExists(python) Or Not files.FileExists(entry) Then
+    MsgBox "Extract the complete package before starting the workbench.", 16, "Court Booking Workbench"
+    WScript.Quit 1
+End If
+shell.CurrentDirectory = root
+quote = Chr(34)
+shell.Run quote & python & quote & " " & quote & entry & quote & "ARGS", 0, False
+'''
+    return body.replace('ARGS', ' --stop' if stop else '').replace('\n', '\r\n')
+
+
+WINDOWLESS_ENTRY_FILES = {
+    "start-workbench.vbs": windowless_entry(),
+    "stop-workbench.vbs": windowless_entry(stop=True),
 }
 
 NOTICE = """南科大场地预约工作台 · 发行说明
@@ -279,6 +303,8 @@ def build(ref: str, out: Path, cache: Path, installer: bool = False) -> Path:
     (pkg / "app" / "PACKAGED").write_text("release package: data lives under %LOCALAPPDATA%\n", encoding="utf-8")
     (pkg / "app" / "VERSION").write_text(version + "\n", encoding="utf-8")
     for name, body in ENTRY_FILES.items():
+        (pkg / name).write_bytes(body.encode("ascii"))
+    for name, body in WINDOWLESS_ENTRY_FILES.items():
         (pkg / name).write_bytes(body.encode("ascii"))
     write_docs(ref, pkg)
     licenses = write_licenses(pkg)

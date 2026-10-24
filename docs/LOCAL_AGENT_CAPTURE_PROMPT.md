@@ -47,7 +47,7 @@
    - 安装版：程序在 `%LOCALAPPDATA%\Programs\SustechReservation\app`（含 `app.py`、`clash-extension.js`），自带 Python 在同级的 `runtime\`；配置在 `%LOCALAPPDATA%\SustechReservation\data\config.toml`。
    - 免安装版：解压目录里的 `app\` 和 `runtime\`；配置同样在 `%LOCALAPPDATA%\SustechReservation\data\config.toml`。
    - 仓库版：程序和 `config.toml` 都在仓库目录，Python 在 `.venv`。
-2. 工作台是否在运行：`GET http://127.0.0.1:8766/api/config` 能否返回。没运行就让我双击桌面「南科大场地预约」（仓库版用 `run-local.ps1`），端口必须是 8766。
+2. 工作台是否在运行：`GET http://127.0.0.1:8766/api/config` 能否返回。没运行就让我双击桌面「南科大场地预约」（仓库版双击 `start-workbench.cmd`），端口必须是 8766。
 3. 读取：
    - `GET /api/capture/clash`：`enabled`（是否抓取模式）、`listening`、`captured`、`port_conflict`
    - `GET /api/mitm/state`

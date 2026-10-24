@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 import time
 import uuid
 from datetime import datetime, timezone
@@ -31,10 +32,12 @@ def _read_version_file() -> str | None:
 def _git_commit() -> str | None:
     if not (ROOT / ".git").exists():
         return None
+    # Started windowless (pythonw), a console program such as git would flash a console window.
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000) if sys.platform == "win32" else 0
     try:
         out = subprocess.run(
             ["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, timeout=2,
+            capture_output=True, text=True, timeout=2, creationflags=flags,
         )
     except (OSError, subprocess.SubprocessError):
         return None

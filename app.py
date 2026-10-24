@@ -94,6 +94,11 @@ def watch_script():
     return FileResponse(ROOT / "watch.js", media_type="text/javascript")
 
 
+@app.get("/onboarding.js")
+def onboarding_script():
+    return FileResponse(ROOT / "onboarding.js", media_type="text/javascript")
+
+
 @app.get("/matrix_target.js")
 def matrix_target_script():
     return FileResponse(ROOT / "matrix_target.js", media_type="text/javascript")

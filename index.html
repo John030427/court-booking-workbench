@@ -597,6 +597,33 @@ kbd {
 .matrix-meta { margin-left: auto; }
 .matrix-release { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); cursor: pointer; }
 .matrix-release input { width: 14px; height: 14px; min-height: 14px; margin: 0; padding: 0; }
+/* First-visit guide (onboarding.js): dimmed page, a ring around one part, a card beside it. */
+.tour-backdrop { position: fixed; inset: 0; z-index: 9000; }
+.tour-backdrop.dim { background: rgba(15, 23, 42, 0.55); }
+.tour-spot {
+  position: fixed; z-index: 9001; border-radius: 12px; pointer-events: none;
+  box-shadow: 0 0 0 3px var(--primary), 0 0 0 9999px rgba(15, 23, 42, 0.55);
+  transition: left .2s ease, top .2s ease, width .2s ease, height .2s ease;
+}
+.tour-card {
+  position: fixed; z-index: 9002; width: min(360px, calc(100vw - 32px)); box-sizing: border-box;
+  padding: 18px 18px 14px; border-radius: 14px; background: var(--card); color: var(--text);
+  max-height: calc(100dvh - 32px); overflow-y: auto;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.3);
+}
+.tour-card.tour-center { left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, calc(100vw - 32px)); }
+.tour-card.tour-sheet { left: 12px; right: 12px; bottom: 12px; width: auto; }
+.tour-count { margin: 0 0 4px; font-size: 12px; font-weight: 600; color: var(--primary); }
+.tour-title { margin: 0 0 8px; font-size: 17px; font-weight: 700; }
+.tour-body { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text); }
+.tour-dots { display: flex; gap: 6px; margin: 14px 0 12px; }
+.tour-dots span { width: 6px; height: 6px; border-radius: 3px; background: var(--border-strong); transition: width .2s ease; }
+.tour-dots span.on { width: 18px; background: var(--primary); }
+.tour-actions { display: flex; align-items: center; gap: 8px; }
+.tour-actions button { min-height: 36px; padding: 6px 14px; }
+.tour-actions button[hidden] { display: none; }
+.tour-spacer { flex: 1; }
+@media (prefers-reduced-motion: reduce) { .tour-spot, .tour-dots span { transition: none; } }
 .matrix-legend { margin: 0 0 10px; color: var(--text-dim); font-size: 12px; }
 .lg-free { color: #047857; font-weight: 600; }
 .lg-busy { color: #BE123C; font-weight: 600; }
@@ -1170,13 +1197,13 @@ kbd {
               <form id="watch-form">
                 <fieldset id="watch-fields">
                   <textarea id="watch-targets" class="visually-hidden" required>19:00-21:00</textarea>
-                  <input type="hidden" id="watch-courts" value="1,2,3,4,7,8,9,10">
+                  <input type="hidden" id="watch-courts" value="1,2,3,4,5,6,7,8,9,10">
                   <input type="checkbox" id="watch-reserve" hidden>
                   <details class="watch-more">
                     <summary>高级：扫描间隔、场地优先顺序</summary>
                     <div class="watch-grid" style="margin-top:10px">
                       <label>扫描间隔（秒）<input id="watch-interval" type="number" min="15" max="3600" value="30" required></label>
-                      <label>场地优先顺序<input id="watch-courts-advanced" value="1,2,3,4,7,8,9,10" aria-describedby="watch-courts-hint"></label>
+                      <label>场地优先顺序<input id="watch-courts-advanced" value="1,2,3,4,5,6,7,8,9,10" aria-describedby="watch-courts-hint"></label>
                       <p class="mini" id="watch-courts-hint">目标场地选「按优先顺序（高级）」时使用；逗号分隔场地号</p>
                     </div>
                   </details>
@@ -1217,6 +1244,10 @@ kbd {
     </div>
 
     <div class="app-view" data-view="settings" hidden>
+      <section id="onboarding-panel" class="card" aria-labelledby="onboarding-heading">
+        <div class="row"><h2 id="onboarding-heading">新手引导</h2><button type="button" class="ghost" id="btn-onboarding">再看一遍</button></div>
+        <p class="mini">一步步认识状态线、测试模式、账号接入、场地表、定时抢场和持续监控。</p>
+      </section>
       <section id="safety-panel" class="card" aria-labelledby="safety-heading">
         <div class="row"><h2 id="safety-heading">测试模式</h2><span class="pill" id="safety-mode">-</span></div>
         <p class="mini" id="safety-explain">默认是真实预约：抢到空场会直接提交订单。</p>
@@ -1342,6 +1373,7 @@ kbd {
 <script src="/control_ops.js" defer></script>
 <script src="/watch.js" defer></script>
 <script src="/connect.js" defer></script>
+<script src="/onboarding.js" defer></script>
 
 <script>
 let logAutoScroll = true;
@@ -2571,8 +2603,16 @@ function rushConfirmText(sportId, date, start, end, courts, releaseAt) {
   const mode = safetyDryRun
     ? "测试模式：完整走一遍流程，但不会提交订单。"
     : "真实预约：抢到空场会直接提交订单。";
+  // The rush scans the chosen courts first and then every other court of the sport.
+  const total = window.courtCountForSport?.(sportId) || courts.length;
+  const others = total - new Set(courts).size;
+  const inNumberOrder = courts.every((c, i) => c === i + 1);
+  const order = !courts.length || (others <= 0 && inNumberOrder)
+    ? `全部 ${total} 个，从 1 号依次到 ${total} 号`
+    : others <= 0 ? `全部 ${total} 个，按 ${courts.join(" → ")} 的顺序`
+    : `${courts.length === 1 ? `${courts[0]} 号场优先` : `${courts.join(" → ")} 优先`}；没空就接着试其他 ${others} 个场地`;
   return `确认开始抢场？\n\n运动：${sport}\n预约日期：${date}（周${weekday}）\n时段：${start}–${end}\n`
-    + `场地顺序：${courts.length ? courts.join(" → ") : "全部场地"}\n放号时间：${release}（北京时间）\n\n${mode}`;
+    + `场地：${order}\n放号时间：${release}（北京时间）\n\n${mode}`;
 }
 
 let autoStarting = false;

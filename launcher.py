@@ -29,6 +29,11 @@ TITLE = "南科大场地预约工作台"
 START_TIMEOUT = 60.0
 TASKS_RUNNING = 3  # --stop --quiet: refused because a rush / watch is running (pass --force to stop it)
 LOG_ROTATE_BYTES = 5 * 1024 * 1024
+# Windows process creation flags (spelled out so the module also imports elsewhere).
+DETACHED_PROCESS = 0x00000008
+CREATE_NEW_PROCESS_GROUP = 0x00000200
+CREATE_BREAKAWAY_FROM_JOB = 0x01000000
+CREATE_NO_WINDOW = 0x08000000
 
 
 def app_port() -> int:
@@ -155,13 +160,19 @@ def spawn_server() -> subprocess.Popen:
     env = {**os.environ, "SUSTECH_APP_PORT": str(app_port()), "PYTHONUTF8": "1"}
     kwargs: dict = {"cwd": str(APP_ROOT), "stdin": subprocess.DEVNULL, "stdout": log, "stderr": subprocess.STDOUT,
                     "env": env}
-    if sys.platform == "win32":
-        # Detached and windowless: closing the launcher or browser does not stop the service.
-        kwargs["creationflags"] = (subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
-                                   | subprocess.CREATE_NO_WINDOW)
-    else:
-        kwargs["start_new_session"] = True
-    return subprocess.Popen([sys.executable, str(APP_ROOT / "serve.py")], **kwargs)
+    cmd = [sys.executable, str(APP_ROOT / "serve.py")]
+    try:
+        if sys.platform != "win32":
+            return subprocess.Popen(cmd, start_new_session=True, **kwargs)
+        # Windows may forbid leaving the launcher's job. Fall back only on access denial.
+        flags = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW
+        try:
+            return subprocess.Popen(cmd, creationflags=flags | CREATE_BREAKAWAY_FROM_JOB, **kwargs)
+        except PermissionError:
+            return subprocess.Popen(cmd, creationflags=flags, **kwargs)
+    finally:
+        # Popen duplicated the handle for the child; the launcher no longer needs its copy.
+        log.close()
 
 
 def default_open(url: str) -> None:

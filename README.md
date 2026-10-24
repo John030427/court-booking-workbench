@@ -2,7 +2,7 @@
 
 Windows 本机场地预约工作台：提前设置定时抢场，或持续关注退订后出现的空场。
 
-代码整理自已测试的 `f599a84` 版本，保留运行所需的平台适配。适用于特定预约平台，不支持任意网站。仓库改名不构成匿名保证。
+当前版本包含完整场地列表修复、新手引导和无窗口后台启动，并整合了 Claude 的相关修复。保留运行所需的平台适配，适用于特定预约平台，不支持任意网站。
 
 ## 开始前准备
 
@@ -35,12 +35,12 @@ git clone https://github.com/John030427/court-booking-workbench.git
 cd court-booking-workbench
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --require-hashes -r release/requirements-win.lock
-powershell -ExecutionPolicy Bypass -File .\run-local.ps1
+.\.venv\Scripts\python.exe launcher.py
 ```
 
 浏览器打开 [http://127.0.0.1:8766/](http://127.0.0.1:8766/)。首次进入先检查「设置 → 测试模式」：当前默认真实预约，演练前请开启测试模式。服务启动后还需要接入自己的账号。
 
-需要自动获取登录信息时，保持服务窗口开着，在仓库目录另开 PowerShell，执行以下入口，并按提示逐项确认：
+看到 `OPEN http://127.0.0.1:8766/` 后启动命令会结束，服务在后台继续运行，可以关闭终端。需要自动获取登录信息时，在仓库目录打开 PowerShell，执行以下入口，并按提示逐项确认：
 
 ```powershell
 .\setup-capture.cmd
@@ -49,7 +49,7 @@ powershell -ExecutionPolicy Bypass -File .\run-local.ps1
 配置说明与撤销方式见 [账号接入指南](docs/CAPTURE_SETUP.md)。后续启动只需在仓库目录运行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\run-local.ps1
+.\.venv\Scripts\python.exe launcher.py
 ```
 
 ### 方式二：复制提示词交给 Agent
@@ -71,7 +71,9 @@ powershell -ExecutionPolicy Bypass -File .\run-local.ps1
 2. 读取仓库 README.md、docs/QUICKSTART.md、docs/CAPTURE_SETUP.md，
    克隆到合适目录，创建 .venv，使用 Python 3.13 和
    release/requirements-win.lock 安装带哈希校验的依赖。
-3. 用 run-local.ps1 启动，检查本机 /api/health，只输出版本、数据目录
+3. 用 .venv\Scripts\python.exe launcher.py 后台启动，等待健康检查成功，
+   不新开 CMD/PowerShell 窗口、不在前台运行 uvicorn。检查 /api/health，
+   只输出版本、数据目录
    和任务是否运行等安全字段。不要把“服务已启动”说成“账号已接入”。
 4. 接着阅读 docs/LOCAL_AGENT_CAPTURE_PROMPT.md，按我实际使用的代理
    客户端选择接入方式。修改代理、规则或证书前，说明影响、备份与撤销
@@ -103,7 +105,7 @@ powershell -ExecutionPolicy Bypass -File .\run-local.ps1
 
 不想搭建源码环境时，再使用下面的免安装程序 ZIP；包里的对应入口名为 `配置自动获取.cmd` 和 `撤销自动获取配置.cmd`。
 
-[下载 Windows 程序](https://github.com/John030427/court-booking-workbench/releases/tag/v2026.10.22-f599a84) · [观看新手视频（5 分 39 秒）](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4) · [详细图文教程](docs/QUICKSTART.md)
+[下载 Windows 程序](https://github.com/John030427/court-booking-workbench/releases/tag/v2026.10.24) · [观看新手视频（5 分 39 秒）](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4) · [详细图文教程](docs/QUICKSTART.md)
 
 [![点击观看新手视频：账号接入、定时抢场与持续监控](docs/assets/tutorial-cover.jpg)](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4)
 
@@ -112,12 +114,22 @@ powershell -ExecutionPolicy Bypass -File .\run-local.ps1
 在 [Releases](https://github.com/John030427/court-booking-workbench/releases) 下载 Windows x64 免安装程序 ZIP 和 `SHA256SUMS.txt`。GitHub 自动生成的 Source code ZIP 只有源码，不含运行时。
 
 1. 核对 SHA-256 后，把程序 ZIP 解压到普通文件夹，不要直接在压缩软件内运行。
-2. 双击 `启动工作台.cmd`，浏览器会打开 `http://127.0.0.1:8766/`。发行包自带 Python，无需另装 Python、Git 或 Node。
+2. 双击 `start-workbench.vbs`，浏览器会打开 `http://127.0.0.1:8766/`，不显示 CMD 或 PowerShell。发行包自带 Python，无需另装 Python、Git 或 Node。系统禁用 VBScript 时可用 `启动工作台.cmd` 兼容入口，会短暂闪出终端。
 3. 打开「设置 → 测试模式」。**当前版本默认真实预约**，首次演练先开启测试模式。
 4. 按下面的步骤接入自己的账号；没有有效登录信息不能查询和预约。
-5. 再次双击会复用已运行的服务。关闭网页不会退出服务，需要退出时使用页面入口或 `停止工作台.cmd`。
+5. 再次双击会复用已运行的服务。关闭网页不会退出服务，需要退出时使用页面入口或 `stop-workbench.vbs`。首次打开还会显示可跳过的新手引导。
 
 仅在本机使用，不要把端口暴露到公网。关机、休眠或退出服务会影响任务执行。
+
+### 在另一台笔记本测试
+
+1. 使用 Windows 10/11 x64，下载当前 Release 的程序 ZIP，完整解压到新的普通目录。不要下载 Source code ZIP 来代替程序包。
+2. 不要复制原电脑的 `config.toml`、订单记录、日志、Token 或 `.mitmproxy` 证书目录。新电脑使用自己的本机配置和证书。
+3. 双击 `start-workbench.vbs`，在「设置」先确认测试模式，需要演练时手动开启。不要一上来就设置真实自动预约。
+4. 查看新手引导，确认羽毛球「不限」显示 10 个场地、网球显示 7 个；登录接入前没有场地数据是正常的。
+5. 在新电脑登录本人的企业微信并保持官方预约页打开，按配置说明接入。每台电脑都需单独检查代理分流、证书和账号状态；不要共用证书私钥。
+6. 先核对「连接 → 登录信息同步 → 平台只读验证」各自状态，再测试只提醒的监控或模拟流程。不要在两台电脑上同时为同一账号运行真实预约任务，跨电脑不能共享本机的防重复记录。
+7. 关闭浏览器后重开工作台应复用同一后台服务；结束试验时用页面「退出服务」或 `stop-workbench.vbs`。
 
 ## 首次接入账号
 

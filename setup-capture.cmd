@@ -2,7 +2,7 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 if not exist ".venv\Scripts\python.exe" (
-  echo [!] .venv not found. Set up the workbench environment first, then start it with run-local.ps1.
+  echo [!] .venv not found. Set up the workbench environment first, then start it with start-workbench.cmd.
   pause
   exit /b 1
 )

@@ -1,6 +1,6 @@
 """Run the workbench in-process so /api/admin/shutdown can stop it cleanly.
 
-launcher.py starts this file; run-local.ps1 keeps using `python -m uvicorn` for development.
+launcher.py starts this file; run-local.ps1 -Console uses uvicorn for development.
 Only ever binds 127.0.0.1.
 """
 from __future__ import annotations

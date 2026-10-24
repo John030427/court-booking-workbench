@@ -28,6 +28,7 @@ import tomlkit
 ROOT = Path(__file__).resolve().parents[1]
 # Installed: Start menu entry; portable zip: 撤销自动获取配置.cmd. Both carry this name.
 UNDO = "「撤销自动获取配置」" if (ROOT / "PACKAGED").exists() else "undo-capture.cmd"
+START = "桌面「南科大场地预约」" if (ROOT / "PACKAGED").exists() else "start-workbench.cmd"
 sys.path.insert(0, str(ROOT))
 from app_paths import DATA_DIR  # noqa: E402  (repo folder in a checkout, %LOCALAPPDATA% in the package)
 WORKBENCH = "http://127.0.0.1:8766"
@@ -300,7 +301,7 @@ def print_survey(info: dict) -> None:
 def enable_capture(state: dict) -> None:
     config = DATA_DIR / "config.toml"
     if not config.exists():
-        raise SetupStop("找不到 config.toml，请先运行一次工作台（run-local.ps1）")
+        raise SetupStop(f"找不到 config.toml，请先运行一次工作台（{START}）")
     text = config.read_text(encoding="utf-8")
     new_text, previous = set_capture_mode(text, "mitm")
     if previous != "mitm":
@@ -445,7 +446,7 @@ def setup() -> None:
     info = survey()
     print_survey(info)
     if not info["workbench"]:
-        raise SetupStop("请先启动工作台（run-local.ps1），再运行本脚本")
+        raise SetupStop(f"请先启动工作台（{START}），再运行本脚本")
     has_verge = "Clash Verge Rev" in info["clients"] or bool(info.get("verge_root"))
     others = [c for c in info["clients"] if c != "Clash Verge Rev"]
     if others:
