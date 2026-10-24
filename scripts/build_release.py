@@ -67,7 +67,7 @@ root = files.GetParentFolderName(WScript.ScriptFullName)
 python = files.BuildPath(root, "runtime\\pythonw.exe")
 entry = files.BuildPath(root, "app\\launcher.py")
 If Not files.FileExists(python) Or Not files.FileExists(entry) Then
-    MsgBox "Extract the complete package before starting the workbench.", 16, "Court Booking Workbench"
+    MsgBox "Extract the complete package before starting the workbench.", 16, "Zhen CourtSnipe"
     WScript.Quit 1
 End If
 shell.CurrentDirectory = root
