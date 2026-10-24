@@ -6,7 +6,7 @@ root = files.GetParentFolderName(WScript.ScriptFullName)
 python = files.BuildPath(root, ".venv\Scripts\pythonw.exe")
 entry = files.BuildPath(root, "launcher.py")
 If Not files.FileExists(python) Or Not files.FileExists(entry) Then
-    MsgBox "The workbench environment is missing. Set up .venv first.", 16, "Court Booking Workbench"
+    MsgBox "The workbench environment is missing. Set up .venv first.", 16, "Zhen CourtSnipe"
     WScript.Quit 1
 End If
 shell.CurrentDirectory = root

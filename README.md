@@ -1,8 +1,8 @@
-# Court Booking Workbench
+# Zhen CourtSnipe
 
 Windows 本机场地预约工作台：提前设置定时抢场，或持续关注退订后出现的空场。
 
-当前版本包含完整场地列表修复、新手引导和无窗口后台启动，并整合了 Claude 的相关修复。保留运行所需的平台适配，适用于特定预约平台，不支持任意网站。
+当前版本包含完整场地列表修复、新手引导和无窗口后台启动。保留运行所需的平台适配，适用于特定预约平台，不支持任意网站。
 
 ## 开始前准备
 
@@ -39,11 +39,11 @@ Windows 本机场地预约工作台：提前设置定时抢场，或持续关注
 
 ```powershell
 cd ~
-git clone https://github.com/John030427/court-booking-workbench.git
-cd court-booking-workbench
+git clone https://github.com/John030427/zhen-courtsnipe.git
+cd zhen-courtsnipe
 ```
 
-`cd ~` 先回到你自己的用户文件夹，项目会下载到 `C:\Users\你的用户名\court-booking-workbench`。少了这一步，PowerShell 可能停在 `C:\Windows\System32`，`git clone` 会报 `Permission denied`。
+`cd ~` 先回到你自己的用户文件夹，项目会下载到 `C:\Users\你的用户名\zhen-courtsnipe`。少了这一步，PowerShell 可能停在 `C:\Windows\System32`，`git clone` 会报 `Permission denied`。
 
 **第 2 步：建 Python 环境，安装依赖**
 
@@ -89,7 +89,7 @@ py -m venv .venv
 - 启动：双击项目文件夹里的 `start-workbench.vbs`，不会弹出任何窗口。
 - 退出：网页左下角「退出服务」，或双击 `stop-workbench.cmd`。关掉浏览器不会停止服务。
 - 更新到新版：先退出服务，在项目文件夹里运行 `git pull`，再运行一次第 2 步的最后一行，然后照常启动。
-- 已经下载过就不要再 `git clone`，也不要删掉项目文件夹：配置和订单记录都在里面。之前按旧说明装在 `Projects` 文件夹里的，继续用那个文件夹即可。
+- 已经下载过就不要再 `git clone`，也不要删掉项目文件夹：配置和订单记录都在里面。之前下载的文件夹叫 `court-booking-workbench`（或在 `Projects` 文件夹里）的，继续用那个文件夹即可：仓库改过名，`git pull` 会自动转到新地址。
 - **`setup-capture.cmd` 是首次账号接入的单独步骤**，不是每次启动都要运行；日常启动工作台不等于自动重新安装证书。
 
 ### 方式二：复制提示词交给 Agent
@@ -97,10 +97,10 @@ py -m venv .venv
 把下面整段交给**使用者自己电脑上有终端权限的本地 Agent**。普通网页聊天不会自动获得本机操作权限。
 
 ```text
-请帮我在这台 Windows 电脑上安装并启动 Court Booking Workbench，
+请帮我在这台 Windows 电脑上安装并启动 Zhen CourtSnipe，
 然后协助我接入自己的账号。请用中文沟通。
 
-仓库：https://github.com/John030427/court-booking-workbench
+仓库：https://github.com/John030427/zhen-courtsnipe
 
 1. 先检查 Windows 版本、Git、已有的 64 位 Python、目标目录和 8766/8080
    端口占用。已有安装就先核实并复用，不覆盖文件、不杀占用端口的程序。
@@ -112,7 +112,7 @@ py -m venv .venv
 2. 读取仓库 README.md、docs/QUICKSTART.md、docs/CAPTURE_SETUP.md，
    按 README「方式一」的三步安装：先 cd 到当前用户的主目录再克隆，
    不在 C:\Windows\System32 下克隆，不照抄其他电脑的绝对路径；已有
-   目录（包括 %USERPROFILE%\Projects\court-booking-workbench）先检查、
+   目录（包括旧名字 court-booking-workbench 的文件夹）先检查、
    复用，不覆盖、不删除。用 py（没有就用 python）创建 .venv，再用
    .venv\Scripts\python.exe -m pip install -r requirements.txt 安装依赖；
    不使用发行包专用的锁文件。每一步检查退出码，失败就停下，不在克隆
@@ -151,9 +151,9 @@ py -m venv .venv
 
 提示词用于使用者自己的电脑。填写自己的环境后交给本地 AI，它会先检查再逐步确认配置。源码版入口需要完整仓库和已安装依赖的 `.venv`，不能只下载一个 CMD 文件运行。
 
-[快速开始](#快速开始) · [观看新手视频（5 分 39 秒）](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4) · [详细图文教程](docs/QUICKSTART.md)
+[快速开始](#快速开始) · [观看新手视频（5 分 39 秒）](https://github.com/John030427/zhen-courtsnipe/releases/download/v2026.10.22-f599a84/tutorial-final.mp4) · [详细图文教程](docs/QUICKSTART.md)
 
-[![点击观看新手视频：账号接入、定时抢场与持续监控](docs/assets/tutorial-cover.jpg)](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4)
+[![点击观看新手视频：账号接入、定时抢场与持续监控](docs/assets/tutorial-cover.jpg)](https://github.com/John030427/zhen-courtsnipe/releases/download/v2026.10.22-f599a84/tutorial-final.mp4)
 
 ## 在另一台笔记本测试
 
@@ -226,7 +226,7 @@ py -m venv .venv
 
 ## 视频教程
 
-完整视频已作为 Release 附件提供：[观看或下载 MP4](https://github.com/John030427/court-booking-workbench/releases/download/v2026.10.22-f599a84/tutorial-final.mp4)。点击本页封面也可打开视频；浏览器可能直接播放或下载，下载后用本机播放器观看即可。
+完整视频已作为 Release 附件提供：[观看或下载 MP4](https://github.com/John030427/zhen-courtsnipe/releases/download/v2026.10.22-f599a84/tutorial-final.mp4)。点击本页封面也可打开视频；浏览器可能直接播放或下载，下载后用本机播放器观看即可。
 
 视频为 1080p、中文配音和字幕，约 5 分 39 秒、29.6 MB。章节已写入 MP4，支持章节的播放器可直接跳转：
 
