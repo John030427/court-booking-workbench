@@ -30,7 +30,6 @@ START_TIMEOUT = 60.0
 TASKS_RUNNING = 3  # --stop --quiet: refused because a rush / watch is running (pass --force to stop it)
 LOG_ROTATE_BYTES = 5 * 1024 * 1024
 # Windows process creation flags (spelled out so the module also imports elsewhere).
-DETACHED_PROCESS = 0x00000008
 CREATE_NEW_PROCESS_GROUP = 0x00000200
 CREATE_BREAKAWAY_FROM_JOB = 0x01000000
 CREATE_NO_WINDOW = 0x08000000
@@ -176,7 +175,9 @@ def spawn_server() -> subprocess.Popen:
         if sys.platform != "win32":
             return subprocess.Popen(cmd, start_new_session=True, **kwargs)
         # Windows may forbid leaving the launcher's job. Fall back only on access denial.
-        flags = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW
+        # DETACHED_PROCESS disables CREATE_NO_WINDOW. A venv redirector can then
+        # create a visible console when it starts the underlying interpreter.
+        flags = CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW
         try:
             return subprocess.Popen(cmd, creationflags=flags | CREATE_BREAKAWAY_FROM_JOB, **kwargs)
         except PermissionError:
