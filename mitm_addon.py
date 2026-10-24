@@ -98,7 +98,8 @@ def _handle_profile(flow, path: str) -> None:
         )
     else:
         reason = f" ({ipc_detail})" if ipc_detail else ""
-        print(f"[PROFILE] IPC failed id={userid}{reason}", file=sys.stderr)
+        what = "IPC rejected" if ipc_detail.startswith("工作台未采用") else "IPC failed"
+        print(f"[PROFILE] {what} id={userid}{reason}", file=sys.stderr)
 
 
 if __name__ == "__main__":

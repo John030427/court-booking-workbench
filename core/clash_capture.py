@@ -16,10 +16,13 @@ def clash_capture_label(
     enabled: bool,
     listening: bool,
     captured: bool,
+    rejected: bool = False,
 ) -> tuple[str, str]:
     """Return (status_key, Chinese label) for the workbench panel."""
     if not enabled:
         return "disabled", "未启用"
+    if rejected:
+        return "rejected", "抓到但未采用"
     if captured:
         return "captured", "已抓到"
     if listening:
@@ -35,11 +38,15 @@ def build_clash_capture_state(
     host: str,
     port: int,
     reservation_host: str,
+    last_reject: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     listening = bool(mitm.get("port_listening") or mitm.get("listening"))
     captured = last_mitm_capture_at is not None
+    # A turned-down capture matters until a newer one is accepted.
+    rejected = bool(last_reject) and (
+        not captured or str(last_reject.get("at") or "") > last_mitm_capture_at.isoformat())
     status, label = clash_capture_label(
-        enabled=enabled, listening=listening, captured=captured
+        enabled=enabled, listening=listening, captured=captured, rejected=rejected
     )
     return {
         "enabled": enabled,
@@ -53,6 +60,8 @@ def build_clash_capture_state(
         "mitm_host": host,
         "mitm_port": port,
         "reservation_host": reservation_host,
+        "last_reject_at": (last_reject or {}).get("at") if rejected else None,
+        "last_reject_reason": (last_reject or {}).get("reason") if rejected else None,
         "port_conflict": bool(mitm.get("port_conflict")),
         "proc_alive": bool(mitm.get("proc_alive")),
         "setup": {

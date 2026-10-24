@@ -49,6 +49,9 @@
   function formatClashCapture(cc) {
     if (!cc || !cc.enabled) return '自动获取登录：未配置（推荐运行「配置自动获取」一键脚本，登录过期可自动续上）';
     const base = 'Clash 代理捕获：' + (cc.label || '未就绪');
+    if (cc.status === 'rejected') {
+      return base + ' · ' + (cc.last_reject_reason || '工作台未采用这次抓到的登录信息') + ' · ' + stamp(cc.last_reject_at);
+    }
     if (cc.status === 'captured' && cc.last_capture_at) {
       return base + ' · ' + stamp(cc.last_capture_at) + ' · 与官方页脚本互补';
     }

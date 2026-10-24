@@ -660,6 +660,7 @@ class Engine:
             enabled=self.mitm_capture_enabled(),
             mitm=ms,
             last_mitm_capture_at=self.tokens.last_mitm_capture_at,
+            last_reject=self.tokens.last_capture_reject,
             host=MITM_HOST,
             port=MITM_PORT,
             reservation_host=RESERVATION_HOST,

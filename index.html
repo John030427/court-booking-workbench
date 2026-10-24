@@ -1922,10 +1922,12 @@ async function pollDashboard() {
     }
     const m = d.mitm || {};
     const mitmUp = m.listening ?? m.port_listening;
-    const [capState, capText] = cc.status === "captured" ? ["ok", "已抓到"]
+    const [capState, capText] = cc.status === "rejected" ? ["error", "未采用"]
+      : cc.status === "captured" ? ["ok", "已抓到"]
       : m.port_conflict ? ["error", "端口被占用"]
       : mitmUp ? ["busy", "监听中"] : ["warn", "未启动"];
-    setStatusChip("chip-capture", capState, capText, `Clash 采集：${cc.label || capText}`);
+    setStatusChip("chip-capture", capState, capText, `Clash 采集：${cc.label || capText}`
+      + (cc.last_reject_reason ? `（${cc.last_reject_reason}）` : ""));
     const w = d.watch || {};
     const wParts = (w.running_sports || []).map((sid) => {
       const st = w.by_sport?.[sid] || {};

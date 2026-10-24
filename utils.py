@@ -1092,7 +1092,8 @@ def capture_token_from_flow(
         print(f"[{ts}] [TOKEN] IPC ok {str(token)[:8]}... {path}")
     else:
         reason = f" ({ipc_detail})" if ipc_detail else ""
-        print(f"[{ts}] [TOKEN] IPC failed {str(token)[:8]}... {path}{reason}")
+        what = "IPC rejected" if ipc_detail.startswith("工作台未采用") else "IPC failed"
+        print(f"[{ts}] [TOKEN] {what} {str(token)[:8]}... {path}{reason}")
 
 def kill_port_holder(host: str, port: int) -> list[int]:
     """强杀所有监听 host:port 的进程，返回被杀的 PID 列表。

@@ -96,9 +96,11 @@ _addon_seq = 0
 
 
 def next_addon_sequence() -> int:
+    """Increasing across processes, not only within one: the workbench rejects a number it has
+    already passed, so a mitmdump restarted under a running workbench must not count from 1."""
     global _addon_seq
     with _addon_seq_lock:
-        _addon_seq += 1
+        _addon_seq = max(_addon_seq + 1, time.time_ns() // 1000)  # microseconds, < 2**53
         return _addon_seq
 
 
@@ -200,6 +202,15 @@ def post_capture_sync(
             with httpx.Client(timeout=timeout, trust_env=False) as client:
                 r = client.post(target, headers=headers, json=payload)
                 if r.status_code == 200:
+                    # 200 only means the workbench answered; it can still turn the capture
+                    # down (another account, an old sequence number). Not worth a retry.
+                    try:
+                        reply = r.json()
+                    except ValueError:
+                        reply = None
+                    if isinstance(reply, dict) and reply.get("ok") is False:
+                        reason = _sanitize_ipc_detail(str(reply.get("msg") or "rejected"), key)
+                        return False, f"工作台未采用：{reason}"
                     return True, ""
                 body = (r.text or "").strip()
                 if body:

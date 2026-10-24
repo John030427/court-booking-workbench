@@ -10,6 +10,7 @@ from models.auth import (
     AuthSnapshot,
     ProfileSnapshot,
     TokenState,
+    is_placeholder,
     public_auth_view,
     token_preview,
 )
@@ -46,6 +47,7 @@ class TokenManager:
         self._last_refresh_at: datetime | None = None
         self._last_sync_at: datetime | None = None
         self._last_mitm_capture_at: datetime | None = None
+        self._last_capture_reject: dict[str, str] | None = None
         self._message = ""
 
         self._auth_revision = 0
@@ -159,6 +161,11 @@ class TokenManager:
     def last_mitm_capture_at(self) -> datetime | None:
         return self._last_mitm_capture_at
 
+    @property
+    def last_capture_reject(self) -> dict[str, str] | None:
+        """The newest capture the workbench turned down: when, why, from which source."""
+        return dict(self._last_capture_reject) if self._last_capture_reject else None
+
     def _note_mitm_capture(self, event: CaptureEvent) -> None:
         if not is_mitm_capture_source(event.source):
             return
@@ -211,13 +218,17 @@ class TokenManager:
         captured_at: str | None = None,
     ) -> None:
         """Load disk config into memory without marking valid."""
-        token = (token or "").strip()
+        # The template's YOUR_USER_ID is not an account; holding it as one made every capture of
+        # the real account look like an account switch and get rejected.
+        token = "" if is_placeholder(token) else (token or "").strip()
+        profile = profile.without_placeholders()
         if not token and not profile.userid:
             if self._snapshot and not force:
                 record('token.config_empty_ignored', token=self.token, userid=self.userid)
                 return
             self._snapshot = None
             self._state = TokenState.UNKNOWN
+            self._message = "未配置 Token"
             return
 
         now = datetime.now(timezone.utc)
@@ -284,7 +295,7 @@ class TokenManager:
         self._notify_auth_failure()
 
     def _reject_account_switch(self, userid: str) -> bool:
-        if not self._snapshot or not self._snapshot.userid:
+        if not self._snapshot or not self._snapshot.userid or is_placeholder(self._snapshot.userid):
             return False
         if not userid:
             return False
@@ -364,6 +375,22 @@ class TokenManager:
         }
 
     async def ingest_capture(self, event: CaptureEvent) -> dict[str, Any]:
+        """Accept or turn down one capture, and say which in the log and audit (never the token)."""
+        result = await self._ingest_capture(event)
+        where = f"seq={event.capture_seq} source={event.source} path={event.path}"
+        if result.get("ok"):
+            self._last_capture_reject = None
+            log.info("capture accepted mode=%s %s", result.get("mode"), where)
+        else:
+            reason = str(result.get("msg") or "rejected")
+            self._last_capture_reject = {
+                "at": datetime.now(timezone.utc).isoformat(), "reason": reason, "source": event.source}
+            log.warning("capture rejected: %s (%s)", reason, where)
+            record("token.capture_rejected", token=event.token, userid=event.userid,
+                   reason=reason, source=event.source, path=event.path)
+        return result
+
+    async def _ingest_capture(self, event: CaptureEvent) -> dict[str, Any]:
         err = validate_capture_event(event, self.allowed_hosts)
         if err:
             return {"ok": False, "msg": err}

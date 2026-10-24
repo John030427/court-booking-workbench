@@ -20,12 +20,21 @@ def token_preview(value: str | None) -> str:
     return f"{value[:min(8, max(0, len(value) // 3))]}..."
 
 
+def is_placeholder(value: str | None) -> bool:
+    """config.example.toml values such as YOUR_USER_ID mean "not set yet", not an account."""
+    return str(value or "").strip().upper().startswith("YOUR_")
+
+
 @dataclass(frozen=True)
 class ProfileSnapshot:
     userid: str
     customer_id: str = ""
     name: str = ""
     tel: str = ""
+
+    def without_placeholders(self) -> "ProfileSnapshot":
+        return ProfileSnapshot(*("" if is_placeholder(v) else v
+                                 for v in (self.userid, self.customer_id, self.name, self.tel)))
 
     def complete(self) -> bool:
         return bool(
